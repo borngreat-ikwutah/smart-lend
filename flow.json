@@ -1,15 +1,35 @@
 {
 	"contracts": {
-		"Counter": {
-			"source": "cadence/contracts/Counter.cdc",
+		"FlowAttestation": {
+			"source": "cadence/contracts/FlowAttestation.cdc",
 			"aliases": {
-				"testing": "0000000000000007"
+				"emulator": "f8d6e0586b0a20c7",
+				"testnet": "0x01",
+				"mainnet": "0x01"
 			}
 		},
-		"CounterTransactionHandler": {
-			"source": "cadence/contracts/CounterTransactionHandler.cdc",
+		"LendingPool": {
+			"source": "cadence/contracts/LendingPool.cdc",
 			"aliases": {
-				"testing": "0000000000000007"
+				"emulator": "f8d6e0586b0a20c7",
+				"testnet": "0x02",
+				"mainnet": "0x02"
+			}
+		},
+		"TrustScore": {
+			"source": "cadence/contracts/TrustScore.cdc",
+			"aliases": {
+				"emulator": "f8d6e0586b0a20c7",
+				"testnet": "0x03",
+				"mainnet": "0x03"
+			}
+		},
+		"TrustScoreOracle": {
+			"source": "cadence/contracts/TrustScoreOracle.cdc",
+			"aliases": {
+				"emulator": "f8d6e0586b0a20c7",
+				"testnet": "0x04",
+				"mainnet": "0x04"
 			}
 		}
 	},
@@ -132,8 +152,10 @@
 	"deployments": {
 		"emulator": {
 			"emulator-account": [
-				"Counter",
-				"CounterTransactionHandler"
+				"FlowAttestation",
+				"LendingPool",
+				"TrustScore",
+				"TrustScoreOracle"
 			]
 		}
 	}

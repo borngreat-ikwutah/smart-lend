@@ -1,0 +1,70 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="lendingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B5CF6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EC4899;stop-opacity:1" />
+    </linearGradient>
+    <filter id="lendingGlow">
+      <feGaussianBlur stdDeviation="1" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background Circle -->
+  <circle cx="32" cy="32" r="28" fill="url(#lendingGradient)" opacity="0.1"/>
+  
+  <!-- Smart Contract Container -->
+  <rect x="12" y="16" width="40" height="32" rx="8" fill="url(#lendingGradient)" opacity="0.8" filter="url(#lendingGlow)"/>
+  
+  <!-- Code Blocks -->
+  <g transform="translate(32, 32)">
+    <!-- Main Lending Logic -->
+    <rect x="-12" y="-8" width="24" height="4" rx="1" fill="white" opacity="0.9"/>
+    <rect x="-12" y="-2" width="16" height="3" rx="1" fill="white" opacity="0.7"/>
+    <rect x="-12" y="3" width="20" height="3" rx="1" fill="white" opacity="0.7"/>
+    
+    <!-- Interest Calculation -->
+    <circle cx="8" cy="-2" r="2" fill="url(#lendingGradient)" opacity="0.6"/>
+    <circle cx="8" cy="4" r="2" fill="url(#lendingGradient)" opacity="0.6"/>
+    
+    <!-- Collateral Management -->
+    <rect x="-16" y="10" width="8" height="6" rx="1" fill="white" opacity="0.8"/>
+    <rect x="-6" y="10" width="8" height="6" rx="1" fill="white" opacity="0.8"/>
+    <rect x="4" y="10" width="8" height="6" rx="1" fill="white" opacity="0.8"/>
+  </g>
+  
+  <!-- Smart Features -->
+  <g transform="translate(32, 16)">
+    <!-- AI Brain -->
+    <circle cx="-8" cy="0" r="3" fill="url(#lendingGradient)" opacity="0.6"/>
+    <circle cx="-8" cy="0" r="1.5" fill="white"/>
+    
+    <!-- Automation Gear -->
+    <g transform="translate(8, 0)">
+      <circle cx="0" cy="0" r="3" fill="none" stroke="white" stroke-width="1.5" opacity="0.8"/>
+      <circle cx="0" cy="0" r="1.5" fill="white" opacity="0.8"/>
+      <rect x="-0.5" y="-3.5" width="1" height="7" fill="white" opacity="0.8"/>
+      <rect x="-3.5" y="-0.5" width="7" height="1" fill="white" opacity="0.8"/>
+    </g>
+  </g>
+  
+  <!-- Performance Indicator -->
+  <circle cx="50" cy="14" r="8" fill="url(#lendingGradient)" opacity="0.9"/>
+  <text x="50" y="18" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="8" font-weight="bold">AI</text>
+  
+  <!-- Data Streams -->
+  <g opacity="0.6">
+    <circle cx="16" cy="8" r="1" fill="#8B5CF6">
+      <animate attributeName="cy" values="8;12;8" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="24" cy="8" r="1" fill="#EC4899">
+      <animate attributeName="cy" values="8;12;8" dur="1.5s" repeatCount="indefinite" begin="0.5s"/>
+    </circle>
+    <circle cx="32" cy="8" r="1" fill="#8B5CF6">
+      <animate attributeName="cy" values="8;12;8" dur="1.5s" repeatCount="indefinite" begin="1s"/>
+    </circle>
+  </g>
+</svg>
