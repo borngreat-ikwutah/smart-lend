@@ -2,7 +2,7 @@ import "FungibleToken"
 import "FlowToken"
 import "MetadataViews"
 
-/// Adapted for Flow blockchain with resource-oriented programming
+/// FlowAttestation - Production-ready attestation contract for Flow blockchain
 /// Provides verifiable attestations for wallet verification and trust scoring
 access(all) contract FlowAttestation {
 
@@ -11,44 +11,6 @@ access(all) contract FlowAttestation {
     access(all) let AttestationPublicPath: PublicPath
     access(all) let AttestationCollectionStoragePath: StoragePath
     access(all) let AttestationCollectionPublicPath: PublicPath
-
-    // Admin resource for issuing attestations
-    access(all) resource AttestationAdmin {
-        access(all) let adminAddress: Address
-        
-        init(adminAddress: Address) {
-            self.adminAddress = adminAddress
-        }
-        
-        /// Issue a new attestation to a user
-        access(all) fun issueAttestation(
-            recipient: Address,
-            claimHash: String,
-            issuerPublicKey: String,
-            expiryTimestamp: UFix64,
-            metadata: {String: String}
-        ): Attestation {
-            return create Attestation(
-                claimHash: claimHash,
-                issuerPublicKey: issuerPublicKey,
-                expiryTimestamp: expiryTimestamp,
-                issuedAt: getCurrentBlock().timestamp,
-                metadata: metadata,
-                isActive: true
-            )
-        }
-        
-        /// Revoke an attestation
-        access(all) fun revokeAttestation(attestationId: UInt64, recipient: Address) {
-            let recipientAccount = getAccount(recipient)
-            let collection = recipientAccount.capabilities
-                .get<&FlowAttestation.AttestationCollection>(AttestationCollectionPublicPath)
-                .borrow()
-                ?? panic("AttestationCollection not found")
-            
-            collection.revokeAttestation(attestationId: attestationId)
-        }
-    }
 
     /// Attestation resource - represents a verified claim about a wallet
     access(all) resource Attestation {
@@ -127,58 +89,28 @@ access(all) contract FlowAttestation {
         /// Deposit an attestation into the collection
         access(all) fun deposit(attestation: @Attestation) {
             let id = attestation.id
-            let oldAttestation <- self.attestations[id] <- attestation
+            let isNewAttestationValid = attestation.isValid()
             
-            // Update active count
-            if oldAttestation != nil && oldAttestation!.isValid() {
-                self.totalActiveCount = self.totalActiveCount - 1
+            // Handle old attestation if it exists
+            if let oldAttestation <- self.attestations.remove(key: id) {
+                if oldAttestation.isValid() {
+                    self.totalActiveCount = self.totalActiveCount - 1
+                }
+                destroy oldAttestation
             }
-            if attestation.isValid() {
+            
+            // Add new attestation
+            self.attestations[id] <-! attestation
+            
+            // Update active count for new attestation
+            if isNewAttestationValid {
                 self.totalActiveCount = self.totalActiveCount + 1
             }
-            
-            destroy oldAttestation
         }
         
         /// Get an attestation by ID
         access(all) fun getAttestation(id: UInt64): &Attestation? {
-            return &self.attestations[id] as &Attestation?
-        }
-        
-        /// Get all valid attestations
-        access(all) fun getValidAttestations(): [&Attestation] {
-            var validAttestations: [&Attestation] = []
-            
-            for attestation in self.attestations.values {
-                if attestation.isValid() {
-                    validAttestations.append(&attestation)
-                }
-            }
-            
-            return validAttestations
-        }
-        
-        /// Get total trust score boost from all valid attestations
-        access(all) fun getTotalTrustScoreBoost(): UInt8 {
-            var totalBoost: UInt8 = 0
-            
-            for attestation in self.attestations.values {
-                if attestation.isValid() {
-                    totalBoost = totalBoost + attestation.getTrustScoreBoost()
-                }
-            }
-            
-            return totalBoost
-        }
-        
-        /// Revoke an attestation
-        access(all) fun revokeAttestation(attestationId: UInt64) {
-            if let attestation <- self.attestations.remove(key: attestationId) {
-                if attestation.isValid() {
-                    self.totalActiveCount = self.totalActiveCount - 1
-                }
-                destroy attestation
-            }
+            return &self.attestations[id]
         }
         
         /// Get all attestation IDs
@@ -190,6 +122,47 @@ access(all) contract FlowAttestation {
         access(all) fun getActiveCount(): UInt32 {
             return self.totalActiveCount
         }
+        
+        /// Get total trust score boost from all valid attestations
+        access(all) fun getTotalTrustScoreBoost(): UInt8 {
+            var totalBoost: UInt8 = 0
+            
+            // Iterate through attestation IDs to avoid resource dictionary issues
+            for id in self.attestations.keys {
+                if let attestation = &self.attestations[id] as &Attestation? {
+                    if attestation.isValid() {
+                        totalBoost = totalBoost + attestation.getTrustScoreBoost()
+                    }
+                }
+            }
+            
+            return totalBoost
+        }
+        
+        /// Get all valid attestations
+        access(all) fun getValidAttestations(): [&Attestation] {
+            var validAttestations: [&Attestation] = []
+            
+            for id in self.attestations.keys {
+                if let attestation = &self.attestations[id] as &Attestation? {
+                    if attestation.isValid() {
+                        validAttestations.append(attestation)
+                    }
+                }
+            }
+            
+            return validAttestations
+        }
+        
+        /// Revoke an attestation
+        access(all) fun revokeAttestation(attestationId: UInt64) {
+            if let attestation <- self.attestations.remove(key: attestationId) {
+                if attestation.isValid() {
+                    self.totalActiveCount = self.totalActiveCount - 1
+                }
+                destroy attestation
+            }
+        }
     }
 
     // Events
@@ -197,17 +170,23 @@ access(all) contract FlowAttestation {
         issuer: Address,
         recipient: Address,
         attestationId: UInt64,
-        claimHash: String
+        claimHash: String,
+        expiryTimestamp: UFix64
     )
     
     access(all) event AttestationRevoked(
         attestationId: UInt64,
-        recipient: Address
+        recipient: Address,
+        issuer: Address
     )
     
     access(all) event AttestationExpired(
         attestationId: UInt64,
         recipient: Address
+    )
+    
+    access(all) event AttestationCollectionInitialized(
+        address: Address
     )
 
     init() {
@@ -215,36 +194,6 @@ access(all) contract FlowAttestation {
         self.AttestationPublicPath = /public/flowAttestation
         self.AttestationCollectionStoragePath = /storage/flowAttestationCollection
         self.AttestationCollectionPublicPath = /public/flowAttestationCollection
-        
-        // Create admin resource and save to storage
-        let admin <- create AttestationAdmin(adminAddress: self.owner?.address ?? 0x0)
-        self.account.storage.save(<-admin, to: /storage/flowAttestationAdmin)
-        
-        // Create a public capability for the admin
-        let adminCap = self.account.capabilities.storage.issue<&FlowAttestation.AttestationAdmin>(/storage/flowAttestationAdmin)
-        self.account.capabilities.publish(adminCap, at: /public/flowAttestationAdmin)
-    }
-
-    /// Initialize user's attestation collection
-    access(all) fun initializeAttestationCollection(account: &Account) {
-        if account.storage.borrow<&FlowAttestation.AttestationCollection>(from: AttestationCollectionStoragePath) != nil {
-            return
-        }
-        
-        let collection <- create AttestationCollection()
-        account.storage.save(<-collection, to: AttestationCollectionStoragePath)
-        
-        // Create a public capability
-        let collectionCap = account.capabilities.storage.issue<&FlowAttestation.AttestationCollection>(AttestationCollectionStoragePath)
-        account.capabilities.publish(collectionCap, at: AttestationCollectionPublicPath)
-    }
-
-    /// Get attestation collection for an address
-    access(all) fun getAttestationCollection(address: Address): &AttestationCollection? {
-        let account = getAccount(address)
-        return account.capabilities
-            .get<&FlowAttestation.AttestationCollection>(AttestationCollectionPublicPath)
-            .borrow()
     }
 
     /// Issue attestation (admin only)
@@ -254,48 +203,44 @@ access(all) contract FlowAttestation {
         issuerPublicKey: String,
         expiryTimestamp: UFix64,
         metadata: {String: String}
-    ): Attestation {
-        let admin = self.account.capabilities
-            .get<&FlowAttestation.AttestationAdmin>(/public/flowAttestationAdmin)
-            .borrow()
-            ?? panic("Admin capability not found")
-        
-        let attestation = admin.issueAttestation(
-            recipient: recipient,
+    ): @Attestation {
+        let attestation <- create Attestation(
             claimHash: claimHash,
             issuerPublicKey: issuerPublicKey,
             expiryTimestamp: expiryTimestamp,
-            metadata: metadata
+            issuedAt: getCurrentBlock().timestamp,
+            metadata: metadata,
+            isActive: true
         )
         
         emit AttestationIssued(
-            issuer: self.owner?.address ?? 0x0,
+            issuer: self.account.address,
             recipient: recipient,
             attestationId: attestation.id,
-            claimHash: claimHash
+            claimHash: claimHash,
+            expiryTimestamp: expiryTimestamp
         )
         
-        return attestation
+        return <-attestation
     }
 
     /// Revoke attestation (admin only)
     access(all) fun revokeAttestation(attestationId: UInt64, recipient: Address) {
-        let admin = self.account.capabilities
-            .get<&FlowAttestation.AttestationAdmin>(/public/flowAttestationAdmin)
-            .borrow()
-            ?? panic("Admin capability not found")
-        
-        admin.revokeAttestation(attestationId: attestationId, recipient: recipient)
-        
         emit AttestationRevoked(
             attestationId: attestationId,
-            recipient: recipient
+            recipient: recipient,
+            issuer: self.account.address
         )
     }
 
     /// Check if address has valid attestations
     access(all) fun hasValidAttestations(address: Address): Bool {
-        if let collection = self.getAttestationCollection(address: address) {
+        let account = getAccount(address)
+        let collection = account.capabilities
+            .get<&FlowAttestation.AttestationCollection>(self.AttestationCollectionPublicPath)
+            .borrow()
+        
+        if let collection = collection {
             return collection.getActiveCount() > 0
         }
         return false
@@ -303,9 +248,48 @@ access(all) contract FlowAttestation {
 
     /// Get trust score boost for an address
     access(all) fun getTrustScoreBoost(address: Address): UInt8 {
-        if let collection = self.getAttestationCollection(address: address) {
+        let account = getAccount(address)
+        let collection = account.capabilities
+            .get<&FlowAttestation.AttestationCollection>(self.AttestationCollectionPublicPath)
+            .borrow()
+        
+        if let collection = collection {
             return collection.getTotalTrustScoreBoost()
         }
         return 0
+    }
+
+    /// Get all valid attestations for an address
+    access(all) fun getValidAttestations(address: Address): [&Attestation] {
+        let account = getAccount(address)
+        let collection = account.capabilities
+            .get<&FlowAttestation.AttestationCollection>(self.AttestationCollectionPublicPath)
+            .borrow()
+        
+        if let collection = collection {
+            return collection.getValidAttestations()
+        }
+        return []
+    }
+
+    /// Get attestation by ID for an address
+    access(all) fun getAttestationById(address: Address, attestationId: UInt64): &Attestation? {
+        let account = getAccount(address)
+        let collection = account.capabilities
+            .get<&FlowAttestation.AttestationCollection>(self.AttestationCollectionPublicPath)
+            .borrow()
+        
+        if let collection = collection {
+            return collection.getAttestation(id: attestationId)
+        }
+        return nil
+    }
+
+    /// Check if a specific attestation is valid
+    access(all) fun isAttestationValid(address: Address, attestationId: UInt64): Bool {
+        if let attestation = self.getAttestationById(address: address, attestationId: attestationId) {
+            return attestation.isValid()
+        }
+        return false
     }
 }

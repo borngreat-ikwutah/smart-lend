@@ -2,16 +2,18 @@
 
 import { useState, useEffect } from "react";
 import * as fcl from "@onflow/fcl";
-import { Menu, X } from "lucide-react";
+import { Menu, ChevronDown } from "lucide-react";
 import CustomIcon from "./CustomIcon";
 import EnhancedWalletConnect from "./EnhancedWalletConnect";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface MobileOptimizedNavbarProps {
   showDocumentation: () => void;
 }
 
 export default function MobileOptimizedNavbar({ showDocumentation }: MobileOptimizedNavbarProps) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<fcl.CurrentUser | null>(null);
 
   useEffect(() => {
@@ -20,91 +22,103 @@ export default function MobileOptimizedNavbar({ showDocumentation }: MobileOptim
   }, []);
 
   return (
-    <nav className="relative z-50 border-b border-white/10 backdrop-blur-md bg-slate-900/95 sticky top-0">
+    <nav className="z-50 border-b border-gray-800 backdrop-blur-md bg-black/95 sticky top-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <CustomIcon name="logo" size={32} className="w-8 h-8" />
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+              <CustomIcon name="logo" size={20} className="w-5 h-5" />
+            </div>
             <span className="text-xl font-bold text-white">SmartLend</span>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-6">
-            <a href="#features" className="text-gray-300 hover:text-white transition-colors font-medium">
+          <div className="hidden lg:flex items-center gap-8">
+            <Button variant="ghost" className="text-gray-300 hover:text-white">
               Features
-            </a>
-            <button 
+            </Button>
+            <Button 
+              variant="ghost" 
               onClick={showDocumentation}
-              className="text-gray-300 hover:text-white transition-colors font-medium"
+              className="text-gray-300 hover:text-white"
             >
               Documentation
-            </button>
-            <a href="#score" className="text-gray-300 hover:text-white transition-colors font-medium">
+            </Button>
+            <Button variant="ghost" className="text-gray-300 hover:text-white">
               Your Score
-            </a>
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="text-gray-300 hover:text-white">
+                  Products
+                  <ChevronDown className="w-4 h-4 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem>AI Trust Scoring</DropdownMenuItem>
+                <DropdownMenuItem>Onchain Verification</DropdownMenuItem>
+                <DropdownMenuItem>Smart Lending</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-4">
             {!user?.loggedIn && (
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+              <Button className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600">
                 Get Started
-              </button>
+              </Button>
             )}
             <EnhancedWalletConnect />
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu */}
           <div className="lg:hidden">
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-gray-300 hover:text-white transition-colors"
-            >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-gray-300 hover:text-white">
+                  <Menu className="w-6 h-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="bg-black border-gray-800">
+                <div className="flex flex-col h-full">
+                  <div className="flex items-center gap-3 mb-8">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                      <CustomIcon name="logo" size={20} className="w-5 h-5" />
+                    </div>
+                    <span className="text-xl font-bold text-white">SmartLend</span>
+                  </div>
+                  
+                  <div className="flex-1 space-y-4">
+                    <Button variant="ghost" className="w-full justify-start text-gray-300 hover:text-white">
+                      Features
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      onClick={showDocumentation}
+                      className="w-full justify-start text-gray-300 hover:text-white"
+                    >
+                      Documentation
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start text-gray-300 hover:text-white">
+                      Your Score
+                    </Button>
+                    
+                    <div className="pt-4 border-t border-gray-800 space-y-3">
+                      {!user?.loggedIn && (
+                        <Button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600">
+                          Get Started
+                        </Button>
+                      )}
+                      <EnhancedWalletConnect />
+                    </div>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
-
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-white/10">
-            <div className="py-4 space-y-4">
-              <a 
-                href="#features" 
-                className="block px-4 py-2 text-gray-300 hover:text-white transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Features
-              </a>
-              <button 
-                onClick={() => {
-                  showDocumentation();
-                  setIsMobileMenuOpen(false);
-                }}
-                className="block w-full text-left px-4 py-2 text-gray-300 hover:text-white transition-colors"
-              >
-                Documentation
-              </button>
-              <a 
-                href="#score" 
-                className="block px-4 py-2 text-gray-300 hover:text-white transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Your Score
-              </a>
-              
-              <div className="px-4 pt-4 border-t border-white/10 space-y-3">
-                {!user?.loggedIn && (
-                  <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                    Get Started
-                  </button>
-                )}
-                <EnhancedWalletConnect />
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </nav>
   );

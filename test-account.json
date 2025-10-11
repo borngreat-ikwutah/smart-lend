@@ -1,0 +1,13 @@
+{
+  "address": "c217963c0db98c89",
+  "balance": "100000.00196405",
+  "contracts": [
+    "FlowAttestation",
+    "LendingPool",
+    "TrustScore",
+    "TrustScoreOracle"
+  ],
+  "keys": [
+    "cfd1f1cc631453ce1d1ccabc0a08b58cf57fa81dc63bfaa10ebaa47f637830b46acb12d6e15cc2434d049929ee45b58b33aecbda72762fd493a8f8a7dd9d0180"
+  ]
+}
