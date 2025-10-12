@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import * as fcl from "@onflow/fcl";
 import { Toaster } from "react-hot-toast";
 import CustomIcon from "@/components/CustomIcon";
@@ -8,13 +9,18 @@ import MobileOptimizedParticleBackground from "@/components/MobileOptimizedParti
 import MobileOptimizedHeroBackground from "@/components/MobileOptimizedHeroBackground";
 import MobileOptimizedFeatureModal from "@/components/MobileOptimizedFeatureModal";
 import DocumentationModal from "@/components/DocumentationModal";
-import MobileOptimizedDashboard from "@/components/MobileOptimizedDashboard";
 import MobileOptimizedNavbar from "@/components/MobileOptimizedNavbar";
 import VerificationFlow from "@/components/VerificationFlow";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
+import {
   BarChart3,
   ArrowRight,
   CheckCircle,
@@ -23,23 +29,33 @@ import {
   Zap,
   TrendingUp,
   Star,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 
 export default function Home() {
   const [user, setUser] = useState<fcl.CurrentUser | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [selectedFeature, setSelectedFeature] = useState<"ai-trust" | "verification" | "smart-lending" | null>(null);
+  const [selectedFeature, setSelectedFeature] = useState<
+    "ai-trust" | "verification" | "smart-lending" | null
+  >(null);
   const [showDocumentation, setShowDocumentation] = useState(false);
   const [showVerificationFlow, setShowVerificationFlow] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     // Subscribe to FCL user state
     const unsubscribe = fcl.currentUser.subscribe(setUser);
     setIsLoaded(true);
-    
+
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    // Redirect authenticated users to dashboard
+    if (isLoaded && user?.loggedIn) {
+      router.push("/dashboard");
+    }
+  }, [user, isLoaded, router]);
 
   if (!isLoaded) {
     return (
@@ -51,33 +67,38 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
-      <Toaster 
+      <Toaster
         position="top-right"
         toastOptions={{
           style: {
-            background: '#000000',
-            color: '#fff',
-            border: '1px solid #1f2937'
+            background: "#000000",
+            color: "#fff",
+            border: "1px solid #1f2937",
           },
         }}
       />
-      
+
       {/* Mobile-Optimized Hero Background */}
       <MobileOptimizedHeroBackground />
       <MobileOptimizedParticleBackground />
-      
+
       {/* Mobile-Optimized Navigation */}
-      <MobileOptimizedNavbar showDocumentation={() => setShowDocumentation(true)} />
+      <MobileOptimizedNavbar
+        showDocumentation={() => setShowDocumentation(true)}
+      />
 
       {/* Hero Section */}
       <div className="relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20">
           <div className="text-center">
-            <Badge variant="outline" className="mb-8 bg-blue-500/10 border-blue-500/20 text-blue-400">
+            <Badge
+              variant="outline"
+              className="mb-8 bg-blue-500/10 border-blue-500/20 text-blue-400"
+            >
               <Star className="w-4 h-4 mr-2" />
               Powered by Flow Blockchain
             </Badge>
-            
+
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
               <span className="block">Onchain Credit Risk,</span>
               <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -85,19 +106,23 @@ export default function Home() {
               </span>
             </h1>
             <p className="text-lg sm:text-xl md:text-2xl text-gray-400 mb-12 max-w-4xl mx-auto leading-relaxed">
-              Credit Scoring, Credit Reporting and Monitoring informed by realtime onchain analytics.
+              Credit Scoring, Credit Reporting and Monitoring informed by
+              realtime onchain analytics.
             </p>
-            
+
             {!user?.loggedIn ? (
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-                <Button size="lg" className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
+                >
                   <Play className="w-5 h-5 mr-3" />
                   Get Started
                   <ChevronRight className="w-4 h-4 ml-2" />
                 </Button>
-                
-                <Button 
-                  variant="outline" 
+
+                <Button
+                  variant="outline"
                   size="lg"
                   onClick={() => setShowDocumentation(true)}
                   className="border-gray-600 hover:border-gray-400"
@@ -108,7 +133,10 @@ export default function Home() {
               </div>
             ) : (
               <div className="text-center mb-16">
-                <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-400">
+                <Badge
+                  variant="outline"
+                  className="bg-green-500/10 border-green-500/20 text-green-400"
+                >
                   <CheckCircle className="w-5 h-5 mr-2" />
                   Wallet Connected - Welcome to SmartLend!
                 </Badge>
@@ -117,7 +145,9 @@ export default function Home() {
 
             {/* Trust Indicators */}
             <div className="text-center">
-              <p className="text-gray-500 mb-8 text-sm">Trusted By Industry Leaders</p>
+              <p className="text-gray-500 mb-8 text-sm">
+                Trusted By Industry Leaders
+              </p>
               <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
                 <div className="text-white font-semibold">Flow Protocol</div>
                 <div className="text-white font-semibold">Blocto</div>
@@ -143,14 +173,15 @@ export default function Home() {
                 One-stop for on-chain credit analytics
               </h2>
               <p className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto">
-                Comprehensive AI-powered credit scoring and lending infrastructure. 
-                Use our advanced analytics to access better rates and reduced collateral requirements.
+                Comprehensive AI-powered credit scoring and lending
+                infrastructure. Use our advanced analytics to access better
+                rates and reduced collateral requirements.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* AI Trust Scoring */}
-              <Card 
+              <Card
                 className="group bg-gray-900/50 backdrop-blur-sm border-gray-800 hover:border-blue-500/50 hover:bg-gray-900/70 transition-all duration-300 cursor-pointer transform hover:scale-[1.02] active:scale-[0.98]"
                 onClick={() => setSelectedFeature("ai-trust")}
               >
@@ -160,28 +191,32 @@ export default function Home() {
                       <Shield className="w-8 h-8 text-white" />
                     </div>
                   </div>
-                  <CardTitle className="text-2xl text-white">AI Trust Scoring</CardTitle>
+                  <CardTitle className="text-2xl text-white">
+                    AI Trust Scoring
+                  </CardTitle>
                   <CardDescription className="text-gray-400 leading-relaxed">
-                    Advanced machine learning models analyze your onchain behavior to provide 
-                    transparent, real-time credit scores from 0-100.
+                    Advanced machine learning models analyze your onchain
+                    behavior to provide transparent, real-time credit scores
+                    from 0-100.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     className="p-0 h-auto text-blue-400 hover:text-blue-300"
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedFeature("ai-trust");
                     }}
                   >
-                    Learn More <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    Learn More{" "}
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </CardContent>
               </Card>
 
               {/* Onchain Verification */}
-              <Card 
+              <Card
                 className="group bg-gray-900/50 backdrop-blur-sm border-gray-800 hover:border-green-500/50 hover:bg-gray-900/70 transition-all duration-300 cursor-pointer transform hover:scale-[1.02] active:scale-[0.98]"
                 onClick={() => setSelectedFeature("verification")}
               >
@@ -191,28 +226,31 @@ export default function Home() {
                       <Zap className="w-8 h-8 text-white" />
                     </div>
                   </div>
-                  <CardTitle className="text-2xl text-white">Onchain Verification</CardTitle>
+                  <CardTitle className="text-2xl text-white">
+                    Onchain Verification
+                  </CardTitle>
                   <CardDescription className="text-gray-400 leading-relaxed">
-                    Link your wallet to verified external accounts for enhanced trust scores 
-                    and access to premium lending features.
+                    Link your wallet to verified external accounts for enhanced
+                    trust scores and access to premium lending features.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     className="p-0 h-auto text-green-400 hover:text-green-300"
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedFeature("verification");
                     }}
                   >
-                    Learn More <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    Learn More{" "}
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </CardContent>
               </Card>
 
               {/* Smart Lending */}
-              <Card 
+              <Card
                 className="group bg-gray-900/50 backdrop-blur-sm border-gray-800 hover:border-purple-500/50 hover:bg-gray-900/70 transition-all duration-300 cursor-pointer transform hover:scale-[1.02] active:scale-[0.98]"
                 onClick={() => setSelectedFeature("smart-lending")}
               >
@@ -222,22 +260,26 @@ export default function Home() {
                       <TrendingUp className="w-8 h-8 text-white" />
                     </div>
                   </div>
-                  <CardTitle className="text-2xl text-white">Smart Lending</CardTitle>
+                  <CardTitle className="text-2xl text-white">
+                    Smart Lending
+                  </CardTitle>
                   <CardDescription className="text-gray-400 leading-relaxed">
-                    Borrow with reduced collateral requirements based on your trust score. 
-                    Higher scores unlock better rates and lower collateral needs.
+                    Borrow with reduced collateral requirements based on your
+                    trust score. Higher scores unlock better rates and lower
+                    collateral needs.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     className="p-0 h-auto text-purple-400 hover:text-purple-300"
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedFeature("smart-lending");
                     }}
                   >
-                    Learn More <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    Learn More{" "}
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </CardContent>
               </Card>
@@ -248,7 +290,9 @@ export default function Home() {
               <CardContent className="p-12">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
                   <div>
-                    <div className="text-4xl font-bold text-white mb-2">200M+</div>
+                    <div className="text-4xl font-bold text-white mb-2">
+                      200M+
+                    </div>
                     <div className="text-gray-400">Scorable addresses</div>
                   </div>
                   <div>
@@ -256,11 +300,15 @@ export default function Home() {
                     <div className="text-gray-400">Blockchains</div>
                   </div>
                   <div>
-                    <div className="text-4xl font-bold text-white mb-2">30+</div>
+                    <div className="text-4xl font-bold text-white mb-2">
+                      30+
+                    </div>
                     <div className="text-gray-400">Lending protocols</div>
                   </div>
                   <div>
-                    <div className="text-4xl font-bold text-white mb-2">95%+</div>
+                    <div className="text-4xl font-bold text-white mb-2">
+                      95%+
+                    </div>
                     <div className="text-gray-400">Repayment rate</div>
                   </div>
                 </div>
@@ -270,16 +318,22 @@ export default function Home() {
             {/* CTA Section */}
             <Card className="text-center bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-500/20">
               <CardContent className="p-12">
-                <h3 className="text-3xl font-bold text-white mb-4">Ready to Get Started?</h3>
+                <h3 className="text-3xl font-bold text-white mb-4">
+                  Ready to Get Started?
+                </h3>
                 <p className="text-gray-400 mb-8 text-lg">
-                  Connect your wallet and start building your onchain credit profile today.
+                  Connect your wallet and start building your onchain credit
+                  profile today.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button size="lg" className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600">
+                  <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+                  >
                     Connect Wallet
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="lg"
                     onClick={() => setShowDocumentation(true)}
                     className="border-gray-600 hover:border-gray-400"
@@ -304,11 +358,12 @@ export default function Home() {
               <span className="text-xl font-bold text-white">SmartLend</span>
             </div>
             <p className="text-gray-400 mb-6">
-              Bringing trust and transparency to digital assets through decentralized credit scoring.
+              Bringing trust and transparency to digital assets through
+              decentralized credit scoring.
             </p>
             <div className="flex justify-center items-center gap-6 text-sm text-gray-400">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => setShowDocumentation(true)}
                 className="hover:text-white"
@@ -316,13 +371,31 @@ export default function Home() {
                 Documentation
               </Button>
               <Button variant="ghost" size="sm" className="hover:text-white">
-                <a href="https://github.com/smartlend" target="_blank" rel="noopener noreferrer">GitHub</a>
+                <a
+                  href="https://github.com/smartlend"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  GitHub
+                </a>
               </Button>
               <Button variant="ghost" size="sm" className="hover:text-white">
-                <a href="https://twitter.com/smartlend" target="_blank" rel="noopener noreferrer">Twitter</a>
+                <a
+                  href="https://twitter.com/smartlend"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Twitter
+                </a>
               </Button>
               <Button variant="ghost" size="sm" className="hover:text-white">
-                <a href="https://discord.gg/smartlend" target="_blank" rel="noopener noreferrer">Discord</a>
+                <a
+                  href="https://discord.gg/smartlend"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Discord
+                </a>
               </Button>
             </div>
           </div>
@@ -330,7 +403,7 @@ export default function Home() {
       </footer>
 
       {/* Mobile-Optimized Feature Modal */}
-      <MobileOptimizedFeatureModal 
+      <MobileOptimizedFeatureModal
         isOpen={selectedFeature !== null}
         onClose={() => setSelectedFeature(null)}
         feature={selectedFeature}
@@ -338,13 +411,13 @@ export default function Home() {
       />
 
       {/* Documentation Modal */}
-      <DocumentationModal 
+      <DocumentationModal
         isOpen={showDocumentation}
         onClose={() => setShowDocumentation(false)}
       />
 
       {/* Verification Flow Modal */}
-      <VerificationFlow 
+      <VerificationFlow
         isOpen={showVerificationFlow}
         onClose={() => setShowVerificationFlow(false)}
         user={user}

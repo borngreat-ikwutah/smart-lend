@@ -10,10 +10,12 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
   Eye,
+  Droplets,
 } from "lucide-react";
 import CustomIcon from "./CustomIcon";
 import VerificationFlow from "./VerificationFlow";
 import { LendingInterface } from "./LendingInterface";
+import { LiquidityInterface } from "./LiquidityInterface";
 
 interface MobileOptimizedDashboardProps {
   user: fcl.CurrentUser | null;
@@ -121,6 +123,7 @@ export default function MobileOptimizedDashboard({
   const tabs = [
     { id: "overview", label: "Overview", icon: Eye, shortLabel: "Home" },
     { id: "lending", label: "Lending", icon: DollarSign, shortLabel: "Loans" },
+    { id: "pools", label: "Pools", icon: Droplets, shortLabel: "Pools" },
     { id: "activity", label: "Activity", icon: Clock, shortLabel: "History" },
   ];
 
@@ -461,6 +464,8 @@ export default function MobileOptimizedDashboard({
         )}
 
         {activeTab === "lending" && <LendingInterface />}
+
+        {activeTab === "pools" && <LiquidityInterface />}
 
         {activeTab === "activity" && (
           <div className="space-y-4 sm:space-y-6">
