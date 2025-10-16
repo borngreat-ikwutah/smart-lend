@@ -128,7 +128,7 @@ export default function MobileOptimizedDashboard({
   ];
 
   return (
-    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
+    <div className="space-y-4 sm:space-y-6">
       {/* Welcome Header */}
       <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 border border-blue-500/20">
         <div className="flex items-center justify-between">

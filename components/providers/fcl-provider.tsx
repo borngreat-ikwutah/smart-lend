@@ -20,8 +20,16 @@ export default function FCLProvider({ children }: FCLProviderProps) {
 
   // Prevent hydration mismatch by ensuring client-side rendering
   if (!isClient) {
-    return <>{children}</>;
+    return (
+      <div className="min-h-screen bg-gradient-to-r from-[#0A0C14] via-[#1A1F2C] to-[#0A0C14]">
+        {children}
+      </div>
+    );
   }
 
-  return <>{children}</>;
+  return (
+    <div className="min-h-screen bg-gradient-to-r from-[#0A0C14] via-[#1A1F2C] to-[#0A0C14]">
+      {children}
+    </div>
+  );
 }
